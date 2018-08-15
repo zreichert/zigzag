@@ -10,6 +10,7 @@ import sys
 import click
 import json
 from zigzag.zigzag import ZigZag
+from six import string_types
 
 
 # ======================================================================================================================
@@ -24,7 +25,7 @@ from zigzag.zigzag import ZigZag
               type=click.STRING,
               default=None,
               help='Specify a test cycle to use as a parent for results.')
-@click.option('--global-properties', '-x',
+@click.option('--global-properties', '-g',
               type=click.STRING,
               default=None,
               help='Specify global properties as a JSON string')
@@ -53,10 +54,10 @@ def main(junit_input_file, qtest_project_id, qtest_test_cycle, pprint_on_fail, g
             global_properties = json.loads(global_properties)
             # check to make sure that global_properties is a dict of strings
             gp_is_dict = isinstance(global_properties, dict)
-            is_unicode = all([isinstance(key, unicode) and
-                              isinstance(value, unicode) for
-                              key, value in global_properties.items()])
-            if not gp_is_dict or not is_unicode:
+            is_string = all([isinstance(key, string_types) and
+                             isinstance(value, string_types) for
+                             key, value in global_properties.items()])
+            if not gp_is_dict or not is_string:
                 raise RuntimeError("Global Properties must be a dict of strings")
             global_properties = {str(key): str(value) for key, value in global_properties.items()}  # remove unicode
         zz = ZigZag(junit_input_file,
@@ -69,10 +70,14 @@ def main(junit_input_file, qtest_project_id, qtest_test_cycle, pprint_on_fail, g
         job_id = zz.upload_test_results()
         click.echo(click.style("\nQueue Job ID: {}".format(str(job_id))))
         click.echo(click.style("\nSuccess!", fg='green'))
-    except (RuntimeError, ValueError) as e:
+    except RuntimeError as e:
         click.echo(click.style(str(e), fg='red'))
         click.echo(click.style("\nFailed!", fg='red'))
-
+        sys.exit(1)
+    except ValueError:
+        message = 'Invalid JSON supplied to --global-properties'
+        click.echo(click.style(message, fg='red'))
+        click.echo(click.style("\nFailed!", fg='red'))
         sys.exit(1)
 
 

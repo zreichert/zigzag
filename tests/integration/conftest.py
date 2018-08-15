@@ -1115,6 +1115,7 @@ class ZigZagRunner(object):
         self._junit_xml_file_path = junit_xml_file_path
         self._metadata = metadata if metadata else {}
 
+        self._global_properties_from_cli = None  # mimics optional data from the CLI
         self._last_invocation_queue_job_id = None   # Also used to indicate if runner has ran before
         self._tests = TestSuiteInfo(self.qtest_api_token, self._qtest_project_id, self._qtest_root_req_module.id)
         self._last_line = 0
@@ -1225,6 +1226,20 @@ class ZigZagRunner(object):
 
         return self._metadata
 
+    @property
+    def global_properties_from_cli(self):
+        """A dictionary of global properties that can be optionally passed from the CLI
+
+        Returns:
+            dict
+        """
+        return self._global_properties_from_cli
+
+    @global_properties_from_cli.setter
+    def global_properties_from_cli(self, value):
+        """Sets the global_properties_from_cli value"""
+        self._global_properties_from_cli = value
+
     def add_test_case(self,
                       state,
                       name=None,
@@ -1277,7 +1292,8 @@ class ZigZagRunner(object):
                     self._qtest_api_token,
                     self._qtest_project_id,
                     self._qtest_root_test_cycle.name,
-                    False)
+                    False,
+                    self._global_properties_from_cli)
 
         self._last_invocation_queue_job_id = zz.upload_test_results()
 

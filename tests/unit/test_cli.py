@@ -205,7 +205,7 @@ def test_bad_json(single_passing_xml, mocker):
     # Test
     result = runner.invoke(cli.main, args=cli_arguments, env=env_vars)
     assert 1 == result.exit_code
-    assert 'No JSON object could be decoded' in result.output
+    assert 'Invalid JSON supplied to --global-properties' in result.output
 
 
 def test_incorrect_json(single_passing_xml, mocker):
