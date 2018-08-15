@@ -14,7 +14,13 @@ from zigzag.requirements_link_facade import RequirementsLinkFacade
 
 class ZigZag(object):
 
-    def __init__(self, junit_xml_file_path, qtest_api_token, qtest_project_id, qtest_test_cycle, pprint_on_fail=False):
+    def __init__(self,
+                 junit_xml_file_path,
+                 qtest_api_token,
+                 qtest_project_id,
+                 qtest_test_cycle,
+                 pprint_on_fail=False,
+                 global_properties=None):
         """ Create a ZigZag facade class object. The ZigZag class uses the Facade pattern to call out to
         subsystems and sub Facades.
 
@@ -24,6 +30,7 @@ class ZigZag(object):
            qtest_project_id (int): The target qTest project for the test results.
            qtest_test_cycle (str): The parent qTest test cycle for test results. (e.g. Product Release codename "Queens")
            pprint_on_fail (bool): A flag for enabling debug pretty print on schema failure.
+           global_properties (str): A JSON string containing global properties to override the contents of the XML
         """  # noqa
 
         swagger_client.configuration.api_key['Authorization'] = qtest_api_token
@@ -38,7 +45,7 @@ class ZigZag(object):
         self._ci_environment = None
         self._build_number = None
         self._build_url = None
-        self._testsuite_props = None
+        self._testsuite_props = global_properties
         self._serialized_junit_xml = None
         self._junit_xml = None
         self._junit_xml_doc = None

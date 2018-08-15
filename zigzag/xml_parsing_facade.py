@@ -34,8 +34,9 @@ class XmlParsingFacade(object):
         self._read()
         self._determine_ci_environment()
         self._validate()
-        self._mediator.testsuite_props = {
-            p.attrib['name']: p.attrib['value'] for p in self._mediator.junit_xml.findall('./properties/property')}
+        if not self._mediator.testsuite_props:
+            self._mediator.testsuite_props = {
+                p.attrib['name']: p.attrib['value'] for p in self._mediator.junit_xml.findall('./properties/property')}
         self._mediator.serialized_junit_xml = etree.tostring(
             self._mediator.junit_xml, encoding='UTF-8', xml_declaration=True)
         try:

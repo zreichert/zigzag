@@ -160,3 +160,73 @@ def test_cli_pprint_on_fail(missing_test_id_xml, mocker):
     assert 1 == result.exit_code
     assert error_msg_exp in result.output
     assert 'Failed!' in result.output
+
+
+def test_override_global_properties(single_passing_xml, mocker):
+    """Verify that you can override global properties with the CLI"""
+
+    # Setup
+    env_vars = {'QTEST_API_TOKEN': 'valid_token'}
+    project_id = '12345'
+    props = {'FOO': 'foo', 'BAR': 'bar', 'BAZ': 'baz'}
+
+    runner = CliRunner()
+    cli_arguments = [single_passing_xml,
+                     project_id,
+                     '--pprint-on-fail',
+                     "--global-properties={}".format(json.dumps(props))]
+
+    # Mock
+    zz = mocker.MagicMock()
+    mocker.patch('zigzag.__init__', return_value=zz)
+
+    # Test
+    result = runner.invoke(cli.main, args=cli_arguments, env=env_vars)
+    assert 1 == result.exit_code
+
+
+def test_bad_json(single_passing_xml, mocker):
+    """Verify that you can not pass bad json to --global-properties"""
+
+    # Setup
+    env_vars = {'QTEST_API_TOKEN': 'valid_token'}
+    project_id = '12345'
+
+    runner = CliRunner()
+    cli_arguments = [single_passing_xml,
+                     project_id,
+                     '--pprint-on-fail',
+                     "--global-properties={}".format('oops => not json')]
+
+    # Mock
+    zz = mocker.MagicMock()
+    mocker.patch('zigzag.__init__', return_value=zz)
+
+    # Test
+    result = runner.invoke(cli.main, args=cli_arguments, env=env_vars)
+    assert 1 == result.exit_code
+    assert 'No JSON object could be decoded' in result.output
+
+
+def test_incorrect_json(single_passing_xml, mocker):
+    """Verify that you can not pass json with an incorrect object structure"""
+
+    # Setup
+    env_vars = {'QTEST_API_TOKEN': 'valid_token'}
+    project_id = '12345'
+    props = {'FOO': 'foo', 'BAR': 'bar', 'oops': [1, 2, 3]}
+
+    runner = CliRunner()
+    cli_arguments = [single_passing_xml,
+                     project_id,
+                     '--pprint-on-fail',
+                     "--global-properties={}".format(json.dumps(props))]
+
+    # Mock
+    zz = mocker.MagicMock()
+    mocker.patch('zigzag.__init__', return_value=zz)
+
+    # Test
+    result = runner.invoke(cli.main, args=cli_arguments, env=env_vars)
+    assert 1 == result.exit_code
+    assert 'Global Properties must be a dict of strings' in result.output
